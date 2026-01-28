@@ -600,6 +600,9 @@ def trim_seq_record(record, args, window_size=40):
 	def harmonic_mean(mylist): #really favours low values
 		if not mylist:
 			return 0
+		filtered = [x for x in mylist if x > 0]
+		if not filtered:
+			return 0
 		return len(mylist) / sum(1 / x for x in mylist if x > 0)
 
 	moving_average = 0
@@ -644,21 +647,27 @@ def trim_seq_by_peak_height(record, window_size=5, stddev_cutoff=0.2):
 	Bases are trimmed from both ends if the windowed average peak height is below (mean - stddev_cutoff * stddev).
 	Returns a new trimmed SeqRecord.
 	"""
+	 # Create a blank record helper function
+	def make_blank_record(rec):
+		blank = SeqRecord(
+			Seq("NNNNN"),
+			id=rec.id,
+			name=rec.name,
+			description=rec.description
+		)
+		if "phred_quality" in rec.letter_annotations:
+			blank.letter_annotations = {"phred_quality": [0,0,0,0,0]}
+		return blank
+	
 	# Read ABI file
 	#record = SeqIO.read(ab1_filepath, "abi")
-	blank = record[:5]
-	blank.seq = Seq("NNNNN")
-	blank.letter_annotations = {"phred_quality": [0,0,0,0,0]}
 	if record.seq is None or len(record.seq) < 6:
-		# If sequence is empty or too short, return a blank record
-		return blank
-	#print(record.id, "has", len(record.seq), "bases.", file=sys.stderr)
-	#pprint.pprint(record.annotations, stream=sys.stderr)  # Debugging line to see the record annotations
+		return make_blank_record(record)
 	
 	if "abif_raw" not in record.annotations:
 		print(f"Error: The record {record.id} does not contain 'abif_raw' annotations. Cannot process peak heights.", file=sys.stderr)
-		return blank
-	
+		return make_blank_record(record)
+ 	
 	abif = record.annotations["abif_raw"]
 
 	# Get peak heights for each base (A, C, G, T)
@@ -712,10 +721,7 @@ def trim_seq_by_peak_height(record, window_size=5, stddev_cutoff=0.2):
 
 	# If too short after trimming, return a blank record
 	if length - i - j < 5:
-		blank = record[:5]
-		blank.seq = Seq("NNNNN")
-		blank.letter_annotations = {"phred_quality": [0,0,0,0,0]}
-		return blank
+		return make_blank_record(record)
 
 	trimmed = record[i:length-j]
 	#print(f"Trimmed {i+j} bases leaving bases {i} to {length-j}", file=sys.stderr)
