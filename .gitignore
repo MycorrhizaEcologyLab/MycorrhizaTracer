@@ -1,0 +1,42 @@
+#Python cache for the module
+__pycache__/
+
+#macOS system files
+.DS_Store
+
+#vscode working dir
+.vscode
+
+#auto saves from microsoft - excel stuff that aren't needed. 
+~*
+
+
+#auto saves of R scripts
+*Autosave*.R
+
+
+#txt log files of any sort
+*txt
+
+#xlsx SangerSummary logs
+Sanger_Summary*xlsx
+
+
+#ignore the TEST_OUTPUT dir
+TEST_OUTPUT/
+
+#ignore NCEA-specific metadata sheets
+metadata_sheets/
+ancillary_scripts/
+
+#ignore blastdb files
+sh_general_release_dynamic_s_04.04.2024.fasta 
+*fasta.nsq
+*fasta.nin
+*fasta.nhr
+*fasta.not
+*fasta.ndb
+*fasta.njs
+*fasta.ntf
+*fasta.nto
+

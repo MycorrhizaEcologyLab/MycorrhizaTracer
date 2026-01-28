@@ -1,0 +1,95 @@
+Here is the description of output columns:
+
+Root_Code: The unique sample ID 
+ITS_consensus_filename: this is the name of the file that was, in the end, used as the 
+	consensus sequence for the samples. Depending on the name of the file you should be 
+	able to tell if it was a consensus, a single read, or the ITSx extracted fragment. 
+ITS_alignQual: the alignmnet quality of the forward and reverse reads
+ITS_avQual: the average PHRED quality of the final consensus, whatever that happened to be. 
+ITS_seqLen: the length of the final consensus
+ITS_nSeqs: the number of reads that went into the consensus, typically 2, 1, or 0. "2" 
+	indicates a consensus called from an alignment between two reads. "1" means that the 
+	one of the reads was chosen (choice is based on length of read, quality of read, and 
+	whether it had a hit or not). "0" indicates that no consensus could be formed. values 
+	above 2 are possible, but unlikely as they indicate that a sample was resequenced, and
+	reads from both attempts were incorporated into the final. But samples are typically 
+	only resequenced if the first go had poor-quality reads which would not have aligned 
+	into the consensus to begin with - it's worth having a second look at any sample that 
+	has >2.
+ITS_blastn_filename: the location of the blast that was used to classify the consensus of 
+	the sample. May be a blast to a database or a salvaging blast to the centroids.
+ITS_classification_type: was this sample classified by blast to the supplied database or 
+	by salvaging with a blast to the cluster centroids. 
+ITS_confidence_taxonomy: the taxonomic string that we can be confident of. Omitted values 
+	imply very low confidence at those levels.
+ITS_blastn_hit: the top blast hit is provided and should be used with caution: it may be 
+	one of many closely-related species which cannot be distinguished between.
+ITS_pident_of_top_hit: the pident of the best hit is provided for convenience.
+ITS_OTU: the OTU that should be used for diversity metrics. May be SH or may be 
+	denovo both of which should be directly comparable. 
+ITSx_trim_queue: was this sample sent to ITSx to be trimmed (only true if the sample did 
+	not have a species-level blast hit and was of high enough quality)
+ITSx_trimmed: was this sample successfully trimmed by ITSx? If true, it will be sent to 
+	clustering. 
+ITS_clustered: True if this sample was (A) sent to the clustering queue or (B) 
+	successfully clustered by salvaging. 
+ITS_clustered_by_salvage: True if this sample was successfully clustered by salvaging. 
+ITS_cluster_ID: the ID of the cluster
+ITS_centroid: the centroid of the cluster
+ITS_clust_size: the number of sequences in the cluster. Does not include samples added to 
+	the cluster by salvaging
+ITS_clust_len: the length of the centroid of the cluster.
+ITS_clust_pident: the pident of the match between the sample and the cluster centroid
+ITS_clust_strand: the strand of the match. Should nearly always be "+" if the primers are 
+	in order and the sequences have been provided in the original orientation.
+ITS_clust_cigar: the cigar string of the alignment between the centroid and the sample. 
+ITS_SalvageGroup: the grouping factor for salavging. A sample can only be added to a 
+	cluster if there is already a sample in that cluster in it's salvage group. 
+ITS_AttempedSalvaging: True if the sample was sent down the salvage path
+ITS_SuccessfullSalvaging: True if the sample was successfully clustered. should be the 
+	same as ITS_clustered_by_salvage.
+ITS_FUNGuild_Guild: Guild from FUNGuild
+ITS_FUNGuild_Confidence_Ranking: confidence from FUNGuld.
+
+The below all match the above for different genes:
+ITS2_fastq_filename
+ITS2_alignQual
+ITS2_avQual
+ITS2_seqLen
+ITS2_nSeqs
+ITS2_blastn_filename
+ITS2_classification_type
+ITS2_confidence_taxonomy
+ITS2_blastn_hit
+ITS2_pident_of_top_hit
+ITS2_Species (used the SH_number)
+ITS2_clustered (only if --cluster_plants_too is included)
+ITS2_cluster_ID (only if --cluster_plants_too is included)
+ITS2_centroid (only if --cluster_plants_too is included)
+ITS2_clust_size (only if --cluster_plants_too is included)
+ITS2_clust_len (only if --cluster_plants_too is included)
+ITS2_clust_pident (only if --cluster_plants_too is included)
+ITS2_clust_strand (only if --cluster_plants_too is included)
+ITS2_clust_cigar (only if --cluster_plants_too is included)
+
+
+
+RBCL_fastq_filename
+RBCL_alignQual
+RBCL_avQual
+RBCL_seqLen
+RBCL_nSeqs
+RBCL_blastn_filename
+RBCL_classification_type
+RBCL_confidence_taxonomy
+RBCL_blastn_hit
+RBCL_pident_of_top_hit
+RBCL_Species (used the species as the RBCL database doesn't do SH numbers)
+RBCL_clustered (only if --cluster_plants_too is included)
+RBCL_cluster_ID (only if --cluster_plants_too is included)
+RBCL_centroid (only if --cluster_plants_too is included)
+RBCL_clust_size (only if --cluster_plants_too is included)
+RBCL_clust_len (only if --cluster_plants_too is included)
+RBCL_clust_pident (only if --cluster_plants_too is included)
+RBCL_clust_strand (only if --cluster_plants_too is included)
+RBCL_clust_cigar (only if --cluster_plants_too is included)
