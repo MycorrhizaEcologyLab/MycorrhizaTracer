@@ -148,3 +148,8 @@ There is a provided dataset and metadata sheet in ./test_data/ that can be used 
 ---
 
 For questions or feature requests, please contact the script author or open an issue on github
+
+
+## Citation
+
+Brekke, T.D., Weeks, T.L., Barber, R.A., Thomson, I., Gooda, R., Gargiulo, R., Delhaye, G., Andrew, C., Kowal, J., Bidartondo, M., Suz, L. M. (in prep) MycorrhizaTracer: A BIOINFORMATIC PIPELINE FOR FUNGI AND PLANT CLASSIFICATION OF SANGER DNA SEQUENCES

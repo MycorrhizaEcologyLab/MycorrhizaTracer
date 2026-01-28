@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "MycorrhizaTracer"
+abstract: "A Python pipeline for processing Sanger sequencing data (ab1 files), generating consensus sequences, classifying them taxonomically using BLASTN against reference databases, clustering sequences into OTUs, and optionally salvaging low-quality reads. Designed for fungal (ITS) and plant (ITS2, RBCL) genes with functional annotation via FUNGuild."
+authors:
+  - family-names: "Brekke"
+    given-names: "Tom"
+    affiliation: "Royal Botanic Gardens, Kew"
+repository-code: "https://github.com/tom-brekke/MycorrhizaTracer"
+url: "https://github.com/tom-brekke/MycorrhizaTracer"
+license: MIT
+version: "2.3.0"
+date-released: "2026-01-28"
+keywords:
+  - bioinformatics
+  - sanger-sequencing
+  - mycorrhiza
+  - taxonomy
+  - ITS
+  - fungi
+  - OTU-clustering
+  - BLAST
+  - Python

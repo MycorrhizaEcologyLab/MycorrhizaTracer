@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added a PR checklist template
 - a way to begin the pipeline at the fastq stage instead of the ab1 stage. 
 - updated the readme to describe the new functionality
+- added citation to the README.md
+- added a CITATION.cff file
+
 
 ### Changed
 - there was a bug with the qual trimming, the stddev was added rather than subtracted. fixed now.
