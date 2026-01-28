@@ -618,6 +618,13 @@ def trim_seq_record(record, args, window_size=40):
 			print(f"Warning: The sample {record.id} does not contain 'phred_quality' annotations. Cannot trim by quality.", file=sys.stderr)
 		return record
 
+	if sum(record.letter_annotations["phred_quality"]) == 0:
+		if args.verbose:
+			# If the quality scores are all zero, we cannot trim by quality.
+			# We will return the original record without trimming.
+			print(f"Warning: The sample {record.id} contains all zero 'phred_quality' annotations. Cannot trim by quality.", file=sys.stderr)
+		return record
+
 	if length > 5:
 		while moving_average < qual and i < (length - window_size):
 			moving_average = harmonic_mean(record.letter_annotations["phred_quality"][i:min(i+window_size, length)])
