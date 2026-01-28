@@ -1,0 +1,3 @@
+[submodule "metadata_sheets"]
+	path = metadata_sheets
+	url = git@github.com:tom-brekke/MycorrhizaTracer-metadatasheets.git
