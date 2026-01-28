@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated the readme to describe the new functionality
 - added citation to the README.md
 - added a CITATION.cff file
+git stauts
 
 
 ### Changed
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - exposed the min length for salvaging parameter (default=150) at the commmand line
 - fixed a bug with two new lines if --onlyITS is called.
 - changed the Repo name to MycorrhizaTracer to match the pipeline name
+- ab1s without a qual score were throwing an error, now handled appropriately. 
 
 ### Removed
 
