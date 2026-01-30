@@ -438,18 +438,23 @@ def make_consensus_fastq(MetaDict, args):
 				print(f"Note: Sample_ID {Sample_ID} found in manual consensus file but gene {gene} not present. Available genes: {list(manual_consensus_dict[Sample_ID].keys())}", file=sys.stderr)
 			
 			if args.manual_consensus_file and Sample_ID in manual_consensus_dict and gene in manual_consensus_dict[Sample_ID]:
-				consensus = read_in_fastaq_from_file(manual_consensus_dict[Sample_ID][gene])
-				Clength = len(consensus)
-				avqual = "NA"
-				aliQual = "NA"
-				nSeqs = "ManuallyCurratedConsensus"
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"] = consensus
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["seqLen"] = Clength #read in the fasta/q sequence length from the file in manual_consensus_dict[Sample_ID][gene]
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["avQual"] = avqual#round(sum(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"].letter_annotations["phred_quality"]) / len(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"]),1) if hasattr(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"], "letter_annotations") else "NA"
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["alignmentQual"] = aliQual
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["nSeqs"] = nSeqs
-				write_consensus_fastq(MetaDict, args, Sample_ID, gene, consensus, consensus_fastq, aliQual, nSeqs)
-				continue
+				try:
+					consensus = read_in_fastaq_from_file(manual_consensus_dict[Sample_ID][gene])
+					Clength = len(consensus)
+					avqual = "NA"
+					aliQual = "NA"
+					nSeqs = "ManuallyCurratedConsensus"
+					MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"] = consensus
+					MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["seqLen"] = Clength #read in the fasta/q sequence length from the file in manual_consensus_dict[Sample_ID][gene]
+					MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["avQual"] = avqual#round(sum(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"].letter_annotations["phred_quality"]) / len(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"]),1) if hasattr(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"], "letter_annotations") else "NA"
+					MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["alignmentQual"] = aliQual
+					MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["nSeqs"] = nSeqs
+					write_consensus_fastq(MetaDict, args, Sample_ID, gene, consensus, consensus_fastq, aliQual, nSeqs)
+					continue
+				except Exception as e:
+					print(f"Error: Failed to read manual consensus for Sample_ID {Sample_ID} gene {gene} from {manual_consensus_dict[Sample_ID][gene]}: {e}", file=sys.stderr)
+					print(f"Falling back to ab1-based consensus generation for this sample.", file=sys.stderr)
+					# Fall through to normal ab1 processing
 
 			if args.resume and os.path.exists(consensus_fastq) and os.path.exists(consensus_fastq.replace(".fq", ".stats.txt")):
 				if args.verbose:
@@ -461,7 +466,11 @@ def make_consensus_fastq(MetaDict, args):
 						#input("Press Enter to continue...")  # Debugging pause
 						aliQual, nSeqs = line.strip().split("\t")
 						aliQual = float(aliQual)
-						nSeqs = int(nSeqs)	
+						# Try to convert nSeqs to int, but keep as string if it's "ManuallyCurratedConsensus"
+						try:
+							nSeqs = int(nSeqs)
+						except ValueError:
+							pass  # Keep nSeqs as string (e.g., "ManuallyCurratedConsensus")
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"] = consensus
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["seqLen"] = len(consensus) if consensus is not None else None
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["avQual"] = round(sum(consensus.letter_annotations["phred_quality"]) / len(consensus),1) if consensus is not None else None
@@ -606,7 +615,8 @@ def read_in_fastaq_from_file(filepath):
 		for record in SeqIO.parse(handle, filetype):
 			records.append(record)
 	if len(records) == 0:
-		print(f"Warning: No records found in file {filepath}.", file=sys.stderr)
+		print(f"Error: No records found in file {filepath}.", file=sys.stderr)
+		raise ValueError(f"Empty sequence file: {filepath}")
 	if len(records) > 1:
 		print(f"Warning: More than one record found in file {filepath}. Only the first record will be used.", file=sys.stderr)
 	records = records[0]
