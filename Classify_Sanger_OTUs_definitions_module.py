@@ -413,6 +413,16 @@ def make_consensus_fastq(MetaDict, args):
 		#need to read in the manual consensus file and add those sequences to the metadict instead of making new ones.
 		#so read it into a dict, so that each time we try a new sample*gene we can check if it's in the manual consensus dict first.
 		manual_consensus_dict = read_in_manual_consensus_file(args)
+		
+		# Check which manual consensus samples are NOT in the main metadata
+		missing_from_metadata = [sid for sid in manual_consensus_dict if sid not in MetaDict]
+		if missing_from_metadata:
+			print(f"\nWarning: {len(missing_from_metadata)} Sample_IDs from manual consensus file are not found in the main metadata file:", file=sys.stderr)
+			for sid in missing_from_metadata[:10]:  # Show first 10
+				print(f"  - {sid}", file=sys.stderr)
+			if len(missing_from_metadata) > 10:
+				print(f"  ... and {len(missing_from_metadata) - 10} more", file=sys.stderr)
+			print("  These may be typos or samples that were filtered out. Check for exact Sample_ID matches.", file=sys.stderr)
 
 	for Sample_ID in MetaDict:
 		counter+=1
@@ -421,8 +431,13 @@ def make_consensus_fastq(MetaDict, args):
 		for gene in gene_list:
 			consensus_fastq = MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["fastq"]
 			if args.manual_consensus_file and Sample_ID in manual_consensus_dict and gene in manual_consensus_dict[Sample_ID]:
-				#input(consensus_fastq)
-				#shouldn't there be a file location here?
+				if args.verbose:
+					print(f"Using manual consensus for Sample_ID {Sample_ID} gene {gene} from {manual_consensus_dict[Sample_ID][gene]}", file=sys.stderr)
+			elif args.manual_consensus_file and args.verbose and Sample_ID in manual_consensus_dict:
+				# Sample is in manual dict but this gene isn't
+				print(f"Note: Sample_ID {Sample_ID} found in manual consensus file but gene {gene} not present. Available genes: {list(manual_consensus_dict[Sample_ID].keys())}", file=sys.stderr)
+			
+			if args.manual_consensus_file and Sample_ID in manual_consensus_dict and gene in manual_consensus_dict[Sample_ID]:
 				consensus = read_in_fastaq_from_file(manual_consensus_dict[Sample_ID][gene])
 				Clength = len(consensus)
 				avqual = "NA"
@@ -448,7 +463,7 @@ def make_consensus_fastq(MetaDict, args):
 						aliQual = float(aliQual)
 						nSeqs = int(nSeqs)	
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"] = consensus
-				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["seqLen"] = len(consensus) if consensus is not None else None 
+				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["seqLen"] = len(consensus) if consensus is not None else None
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["avQual"] = round(sum(consensus.letter_annotations["phred_quality"]) / len(consensus),1) if consensus is not None else None
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["alignmentQual"] = aliQual
 				MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["nSeqs"] = nSeqs
@@ -461,8 +476,8 @@ def make_consensus_fastq(MetaDict, args):
 			#If there is one that passes, use that one as the consensus sequence.
 			#If there are none that pass, then skip this sample and gene.
 			#If there are more than two, then compare the qualities and lengths of the sequences and select the two best ones to make a consensus sequence.
-			q = args.min_read_len #100 #minimum sequence length for alignmetn
-			nseqs_in_cons = sum([1 for Q in MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["seqLens"] if Q >= q])
+			l = args.min_read_len #100 #minimum sequence length for alignmetn
+			nseqs_in_cons = sum([1 for L in MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["seqLens"] if L >= l])
 			#if number of lengths above 100 is >=2: choose best two (these have already been qual-trimmed)
 			if nseqs_in_cons >= 2:
 				#get the index of the two sequences with the highest average quality:
@@ -482,7 +497,7 @@ def make_consensus_fastq(MetaDict, args):
 			#if number of seqLens above 100 is 0: skip this sample
 			elif nseqs_in_cons == 0:
 				if args.verbose:
-					print(f"Warning: Sample_ID {Sample_ID} gene {gene} has no sequences longer than ", q, "bps. Skipping this sample and gene.", sep="", file=sys.stderr)
+					print(f"Warning: Sample_ID {Sample_ID} gene {gene} has no sequences longer than ", l, "bps. Skipping this sample and gene.", sep="", file=sys.stderr)
 				consensus = None
 				aliQual = 0
 				nSeqs = 0
@@ -528,10 +543,21 @@ def read_in_manual_consensus_file(args):
 	manual_consensus_dict = {}
 	for line in open(args.manual_consensus_file, "r", encoding='utf-8-sig'):
 		line = line.strip()
+		# Skip empty lines
+		if not line:
+			continue
 		if line.startswith("Sample_ID"):
 			continue
 		bits = line.split(",")
+		# Skip malformed lines
+		if len(bits) < 9:
+			if args.verbose:
+				print(f"Warning: Skipping malformed line in manual consensus file (expected 9 columns, got {len(bits)}): {line[:100]}", file=sys.stderr)
+			continue
 		sample_id = bits[0]
+		# Skip lines with empty sample_id
+		if not sample_id:
+			continue
 		plot = bits[1] #isn't needed in this file and can be ignored.
 		directory = bits[2]
 		ITSconsensus = bits[3]
@@ -550,10 +576,17 @@ def read_in_manual_consensus_file(args):
 			manual_consensus_dict[sample_id] = {}
 			if ITSconsensus != "":
 				manual_consensus_dict[sample_id]["ITS"] = args.prefix + directory + ITSconsensus
+				if args.verbose:
+					print(f"\tLoaded manual consensus for {sample_id} ITS: {args.prefix + directory + ITSconsensus}", file=sys.stderr)
 			if ITS2consensus != "":
 				manual_consensus_dict[sample_id]["ITS2"] = args.prefix + directory + ITS2consensus
+				if args.verbose:
+					print(f"\tLoaded manual consensus for {sample_id} ITS2: {args.prefix + directory + ITS2consensus}", file=sys.stderr)
 			if RBCLconsensus != "":
 				manual_consensus_dict[sample_id]["RBCL"] = args.prefix + directory + RBCLconsensus
+				if args.verbose:
+					print(f"\tLoaded manual consensus for {sample_id} RBCL: {args.prefix + directory + RBCLconsensus}", file=sys.stderr)
+	print(f"\tLoaded manual consensus sequences for {len(manual_consensus_dict)} samples.", file=sys.stderr)
 	#pprint.pprint(manual_consensus_dict, stream=sys.stderr)
 	return manual_consensus_dict
 
