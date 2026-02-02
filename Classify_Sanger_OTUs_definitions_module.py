@@ -1201,6 +1201,7 @@ def parse_blastn_output(MetaDict, Sample_ID, gene, args, blastfile):
 		if args.verbose:
 			print(f"Error: BLASTN output file {blastfile} does not exist for Sample_ID {Sample_ID} gene {gene}.", file=sys.stderr)
 		return None, None, None
+	
 	with open(blastfile, "r") as blast_fh:
 		#need to read in hits
 		blast_list = [line.strip("\n") for line in blast_fh if int(line.split("\t")[3]) > args.minMatchLength and test_scov_qcov(line, args.minSCOV, args.minQCOV)]
