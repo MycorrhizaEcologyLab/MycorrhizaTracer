@@ -440,6 +440,9 @@ def make_consensus_fastq(MetaDict, args):
 			if args.manual_consensus_file and Sample_ID in manual_consensus_dict and gene in manual_consensus_dict[Sample_ID]:
 				try:
 					consensus = read_in_fastaq_from_file(manual_consensus_dict[Sample_ID][gene])
+					# Ensure the record.id matches the Sample_ID from metadata sheet
+					consensus.id = Sample_ID
+					consensus.description = Sample_ID + " manual_consensus"
 					Clength = len(consensus)
 					avqual = "NA"
 					aliQual = "NA"
@@ -1446,8 +1449,12 @@ def cluster_seqs_vsearch(MetaDict, args):
 					#if Sample_ID == "N718_9":
 					#	pprint.pprint(MetaDict[Sample_ID][gene], stream=sys.stderr)  # Debugging line to see the MetaDict for this sample and gene
 					#	input("Press Enter to continue...")  # Debugging pause
-					MetaDict[Sample_ID][gene]["Clustering"]["ITSx_trim_queue"] = True 
-					SeqIO.write(MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"], itsx_handle, "fasta")
+					MetaDict[Sample_ID][gene]["Clustering"]["ITSx_trim_queue"] = True
+					# Ensure record.id matches Sample_ID before writing (important for manual consensus files)
+					record_to_write = MetaDict[Sample_ID][gene]["Seqs"]["Cons"]["record"]
+					if record_to_write.id != Sample_ID:
+						record_to_write.id = Sample_ID
+					SeqIO.write(record_to_write, itsx_handle, "fasta")
 				print("\tSamples suitable for ITSx trimming: ", counter, end = "\n", file=sys.stderr, sep="")
 			if counter == 0:
 				print(f"No sequences found that meet the criteria for ITSx trimming for gene {gene}. Skipping ITSx step.", file=sys.stderr)
