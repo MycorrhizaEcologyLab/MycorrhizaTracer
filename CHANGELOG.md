@@ -33,6 +33,7 @@ git stauts
 - fixed a bug with two new lines if --onlyITS is called.
 - changed the Repo name to MycorrhizaTracer to match the pipeline name
 - ab1s without a qual score were throwing an error, now handled appropriately. 
+- simplified the conda environment to only include the primary programs and let conda sort out the dependcy tree - that should make it more portable across platforms.
 
 ### Removed
 
