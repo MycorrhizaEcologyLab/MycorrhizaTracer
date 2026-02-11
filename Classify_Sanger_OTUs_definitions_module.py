@@ -920,6 +920,9 @@ def classify_seqs_blastn(MetaDict, args):
 	sls = {"ITS": args.species_list_ITS, "ITS2": args.species_list_ITS2, "RBCL": args.species_list_RBCL}
 
 	gene_list = ["ITS", "ITS2", "RBCL"]
+	gene_list = [gene for gene in gene_list if args.__dict__.get(f"{gene}_db") is not None] #only include genes for which a db was provided
+	print(f"\nGenes to classify based on provided databases: {gene_list}", file=sys.stderr)
+
 	if args.onlyITS:
 		gene_list = ["ITS"]	
 	
@@ -941,6 +944,7 @@ def classify_seqs_blastn(MetaDict, args):
 			dbs[gene] = filtered_db #this replaces the db to be used with the filtered one
 
 		#then make sure it has a blast database
+
 		if not os.path.exists(dbs[gene] + ".nhr"):
 			print("\tFormatting BLASTN database.", file=sys.stderr)
 			#make the blastn database from the fasta file
@@ -2005,13 +2009,14 @@ def print_final_summary_Stats(MetaDict, args, FH, command_run):
 
 	
 	gene_list = ["ITS", "ITS2", "RBCL"]
+	gene_list = [gene for gene in gene_list if getattr(args, f"{gene}_db") is not None]  # Only include genes for which a database was provided
 	if args.onlyITS:
 		gene_list = ["ITS"]
 
 	db_used = {
-		"ITS":os.path.basename(args.ITS_db),
-		"ITS2":os.path.basename(args.ITS2_db),
-		"RBCL":os.path.basename(args.RBCL_db)
+		"ITS":os.path.basename(args.ITS_db) if args.ITS_db is not None else None,
+		"ITS2":os.path.basename(args.ITS2_db) if args.ITS2_db is not None else None,
+		"RBCL":os.path.basename(args.RBCL_db) if args.RBCL_db is not None else None
 	}
 
 	if args.species_list_ITS:

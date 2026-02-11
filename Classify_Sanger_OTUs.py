@@ -36,9 +36,9 @@ def parse_args():
 	parser.add_argument("--species_list_ITS", type=str, required=False, default=None, help="Path to the species list file for ITS. Default is %(default)s")
 	parser.add_argument("--species_list_ITS2", type=str, required=False, default=None, help="Path to the species list file for ITS2. Default is %(default)s")
 	parser.add_argument("--species_list_RBCL", type=str, required=False, default=None, help="Path to the species list file for RBCL. Default is %(default)s")
-	parser.add_argument("--ITS_db", type=str, required=True, help="Path to the BLASTN database for ITS sequences.")
-	parser.add_argument("--ITS2_db", type=str, required=True, help="Path to the BLASTN database for ITS2 sequences.")
-	parser.add_argument("--RBCL_db", type=str, required=True, help="Path to the BLASTN database for RBCL sequences.")
+	parser.add_argument("--ITS_db", type=str, required=False, help="Path to the BLASTN database for ITS sequences.")
+	parser.add_argument("--ITS2_db", type=str, required=False, help="Path to the BLASTN database for ITS2 sequences.")
+	parser.add_argument("--RBCL_db", type=str, required=False, help="Path to the BLASTN database for RBCL sequences.")
 	parser.add_argument("--minMatchLength", type=int, default=50, help="Minimum match length for BLASTN classification. Default is %(default)s. This is used to filter out short matches that may not be reliable.")
 	parser.add_argument("--minSCOV", type=float, default=0.3, help="Minimum subject coverage for BLASTN classification. Default is %(default)s. This is used to filter out matches that do not cover a sufficient portion of the query sequence. Best to set this very high like 0.98 or 0.99 if your sequences are longer than the database (i.e.: PacBio reads vs UNITE). Set it close to the ratio of qlen/slen (i.e.: 0) if your database sequences are chromosome-long. Maybe leave it alone for Sanger reads that are about the same as the database (~500bps).")
 	parser.add_argument("--minQCOV", type=float, default=0.3, help="Minimum query coverage for BLASTN classification. Default is %(default)s. This is used to filter out matches that do not cover a sufficient portion of the query sequence. If your query sequences are longer than the database set this fairly low, perhaps a bit less than the ratio of slen/qlen. If the database sequences are longer - especially if they are MUCH longer - then set it closer to 1. Default is probably fine if your sequences are about the same length as the database (i.e.: Sanger reads vs UNITE)")
@@ -75,7 +75,16 @@ def parse_args():
 	#troublseshooting arguments
 	parser.add_argument("--troubleshooting", action="store_true", help="Run the pipeline in troubleshooting mode. This will print additional information to stderr and may create additional output files for debugging purposes. Default is False.")
 	parser.add_argument("--firstNsamples", type=int, default=0, help="Run the pipeline on only the first N samples in the metadata file. This is useful for testing and debugging. but should never be used for the final analysis. Default is %(default)s, which means all samples will be processed. Set to 0 to process all samples.")
-	return parser.parse_args()
+	
+	args = parser.parse_args()
+	if args.ITS_db is None and args.ITS2_db is None and args.RBCL_db is None:
+		parser.error("At least one of the BLASTN databases must be provided. Please provide at least one of --ITS_db, --ITS2_db, or --RBCL_db.")
+	
+	db_count = sum([args.ITS_db is not None, args.ITS2_db is not None, args.RBCL_db is not None])
+	if db_count < 3:
+		input("\n!!!\nLess that 3 database have been provided with --ITS_db, --ITS2_db, and --RBCL_db. \nOnly genes with provided databases will be classified.\nPress enter to continue or cancel the run to fix.\n!!!\n")
+
+	return args
 
 def main(): 
 	args = parse_args()

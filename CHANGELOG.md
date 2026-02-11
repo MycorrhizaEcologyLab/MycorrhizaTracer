@@ -34,6 +34,7 @@ git stauts
 - changed the Repo name to MycorrhizaTracer to match the pipeline name
 - ab1s without a qual score were throwing an error, now handled appropriately. 
 - simplified the conda environment to only include the primary programs and let conda sort out the dependcy tree - that should make it more portable across platforms.
+- updated teh error checking for databases required, now allows less than all three databases to be specified at teh comand line. 
 
 ### Removed
 

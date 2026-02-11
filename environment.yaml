@@ -9,3 +9,4 @@ dependencies:
   - blast=2.14.0
   - vsearch=2.21.1
   - itsx=1.1.3
+  - requests
