@@ -48,17 +48,17 @@ Install FUNGuild by following the instructions here: https://github.com/UMNFuN/F
 
 The metadata CSV should include at least the following columns:
 
-| Column Name     | Required? | Notes                                                                                  |
+| Column Name     | Required? | Notes                                                                                 |
 |-----------------|-----------|---------------------------------------------------------------------------------------|
 | Sample_ID       | YES       | Unique sample identifier                                                              |
-| Plot.           | optional  | Used for salvaging: restricts salvaged assignments to groups already present in plot  |
-| directory       | YES       | Directory containing the ab1 files                                                    |
-| ITS_For_file    | depends   | Relative path to ITS forward ab1 file                                                 |
-| ITS_Rev_file    | depends   | Relative path to ITS reverse ab1 file                                                 |
-| ITS2_For_file   | depends   | Relative path to ITS2 forward ab1 file                                                |
-| ITS2_Rev_file   | depends   | Relative path to ITS2 reverse ab1 file                                                |
-| RBCL_For_file   | depends   | Relative path to RBCL forward ab1 file                                                |
-| RBCL_Rev_file   | depends   | Relative path to RBCL reverse ab1 file                                                |
+| Plot            | optional  | Used for salvaging: restricts salvaged assignments to groups already present in plot  |
+| directory       | YES       | Directory containing the ab1 files, must NOT be an absolute path if using --prefix    |
+| ITS_For_file    | depends   | Relative path to ITS forward ab1 file from ./directory/                               |
+| ITS_Rev_file    | depends   | Relative path to ITS reverse ab1 file from ./directory/                               |
+| ITS2_For_file   | depends   | Relative path to ITS2 forward ab1 file from ./directory/                              |
+| ITS2_Rev_file   | depends   | Relative path to ITS2 reverse ab1 file from ./directory/                              |
+| RBCL_For_file   | depends   | Relative path to RBCL forward ab1 file from ./directory/                              |
+| RBCL_Rev_file   | depends   | Relative path to RBCL reverse ab1 file from ./directory/                              |
 | ...             | optional  | Any other metadata columns you wish to include                                        |
 
 See the provided template "Metadata_Template.xlsx" for details, this can be filled out and will need to be saved in CSV format.
