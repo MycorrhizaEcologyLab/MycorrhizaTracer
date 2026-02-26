@@ -365,6 +365,8 @@ def create_fastq_from_ab1(MetaDict, args, SS_FH):
 							raise
 					
 					#need to qual trim the sequence
+					if args.length_to_trim > 0:
+						seq_record = trim_seq_record_by_length(seq_record, args.length_to_trim) #this just trims the sequence to a length from the start
 					seq_record = trim_seq_record(seq_record, args)
 					seq_record = trim_seq_by_peak_height(seq_record, window_size=args.window_size, stddev_cutoff=args.stddev_cutoff) #this reads in the ab1 and trims by peak height. 
 					#input("Write a primer-aligner trim function that looks for the RC of R pimer in F read, and the RC of F primer in the R Read and trims off any trailing sequence.")
@@ -624,6 +626,12 @@ def read_in_fastaq_from_file(filepath):
 		print(f"Warning: More than one record found in file {filepath}. Only the first record will be used.", file=sys.stderr)
 	records = records[0]
 	return records
+
+def trim_seq_record_by_length(record, length_to_trim):
+	if len(record) > length_to_trim:
+		trimmed = record[:length_to_trim]
+		return trimmed
+	return record
 
 def trim_seq_record(record, args, window_size=40):
 	"""
