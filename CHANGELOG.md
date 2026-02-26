@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated the readme to describe the new functionality
 - added citation to the README.md
 - added a CITATION.cff file
-git stauts
+- added a flat length trimmer for raw ab1 files. 
 
 
 ### Changed
