@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed 
+- updated output file to report fastq instead of fasta for ITS reads. 
 
 ### Removed
 
