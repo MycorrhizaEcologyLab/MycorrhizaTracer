@@ -2318,7 +2318,7 @@ def write_data_summary_file(MetaDict, args, command_run, runtime):
 			print(fileSep.join([			
 				#ITS2
 					#consensus quality metrics
-						"ITS2_fastq_filename", 
+						"ITS2_consensus_filename", 
 						"ITS2_alignQual", 
 						"ITS2_avQual", 
 						"ITS2_seqLen", 
@@ -2353,7 +2353,7 @@ def write_data_summary_file(MetaDict, args, command_run, runtime):
 			print(fileSep.join([			
 				#RBCL
 					#consensus quality metrics
-						"RBCL_fastq_filename", 
+						"RBCL_consensus_filename", 
 						"RBCL_alignQual", 
 						"RBCL_avQual", 
 						"RBCL_seqLen", 
@@ -2396,7 +2396,7 @@ def write_data_summary_file(MetaDict, args, command_run, runtime):
 				
 			#ITS consensus things: 
 			print(
-				MetaDict[SampleID]["ITS"]["Seqs"]["Cons"]["fasta"], 
+				MetaDict[SampleID]["ITS"]["Seqs"]["Cons"]["fastq"], 
 				MetaDict[SampleID]["ITS"]["Seqs"]["Cons"]["alignmentQual"], 
 				MetaDict[SampleID]["ITS"]["Seqs"]["Cons"]["avQual"], 
 				MetaDict[SampleID]["ITS"]["Seqs"]["Cons"]["seqLen"],
