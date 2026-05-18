@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed 
 - updated output file to report fastq instead of fasta for ITS reads. 
+- dirdepth can now parse by underscore, dash, or period. goes in order, if there's an udnerscore it uses only that, elif there's a dash, it uses only that, elif there's a period it uses only that. else it doesn't split. 
 
 ### Removed
 

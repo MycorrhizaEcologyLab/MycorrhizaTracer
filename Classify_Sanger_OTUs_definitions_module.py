@@ -56,6 +56,8 @@ def add_in_dirDepth(SampleID, gene, args):
 			bits = fileName.split("-")
 		elif re.search("\.", fileName):
 			bits = fileName.split(".")	
+		else:
+			bits = [fileName] #if there are no delimiters, just use the whole filename as one bit	
 		dirDepth = min(len(bits)-1, args.dirDepth)
 		subdir = os.path.join(*bits[:dirDepth]) if dirDepth > 0 else ""
 		return subdir
