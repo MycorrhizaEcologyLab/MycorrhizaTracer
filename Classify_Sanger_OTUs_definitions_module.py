@@ -50,7 +50,12 @@ def add_in_dirDepth(SampleID, gene, args):
 	"""this helps build path names in many places and keep track of intermediary files"""
 	fileName = f"{SampleID}_{gene}.consensus.fq"
 	if hasattr(args, 'dirDepth') and args.dirDepth:
-		bits = fileName.split("_")
+		if re.search("_", fileName):
+			bits = fileName.split("_")
+		elif re.search("-", fileName):
+			bits = fileName.split("-")
+		elif re.search("\.", fileName):
+			bits = fileName.split(".")	
 		dirDepth = min(len(bits)-1, args.dirDepth)
 		subdir = os.path.join(*bits[:dirDepth]) if dirDepth > 0 else ""
 		return subdir
