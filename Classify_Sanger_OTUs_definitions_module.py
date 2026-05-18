@@ -48,17 +48,16 @@ def make_output_dirs(outdir):
 def add_in_dirDepth(SampleID, gene, args):
 	"""Returns the subdirectory path (after 01_consensuses/ and before the filename) based on dirDepth logic."""
 	"""this helps build path names in many places and keep track of intermediary files"""
-	fileName = f"{SampleID}_{gene}.consensus.fq"
 	if hasattr(args, 'dirDepth') and args.dirDepth:
-		if re.search("_", fileName):
-			bits = fileName.split("_")
-		elif re.search("-", fileName):
-			bits = fileName.split("-")
-		elif re.search("\.", fileName):
-			bits = fileName.split(".")	
+		if re.search("_", SampleID):
+			bits = SampleID.split("_")
+		elif re.search("-", SampleID):
+			bits = SampleID.split("-")
+		elif re.search(r"\.", SampleID):
+			bits = SampleID.split(".")
 		else:
-			bits = [fileName] #if there are no delimiters, just use the whole filename as one bit	
-		dirDepth = min(len(bits)-1, args.dirDepth)
+			bits = [SampleID] #if there are no delimiters, just use the whole SampleID as one bit
+		dirDepth = min(len(bits), args.dirDepth)
 		subdir = os.path.join(*bits[:dirDepth]) if dirDepth > 0 else ""
 		return subdir
 	return ""
@@ -1641,7 +1640,7 @@ def should_sample_be_clustered(MetaDict, Sample_ID, gene, args):
 
 def load_and_assign_clusters(MetaDict, gene, args):
 	#define file with clusters in it
-	cluster_filename = args.output_dir + "03_cluster_seqs/" + gene + "_clusters.uc"
+	cluster_filename = os.path.join(args.output_dir, "03_cluster_seqs", gene+"_clusters.uc")
 	clustDict = {}
 	#counter = counter2 = 0
 	SH_tom_set = set([])
