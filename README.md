@@ -74,7 +74,7 @@ If you have manually curated fasta/fastq files: the pipeline can begin with them
 
 ## Recommended Flags
 
-- `--resume` Re-run pipeline without overwritting previous ouputs. Delete any files you want repeated, but make sure to deleter everything downstream of them as well.
+- `--resume` Re-run pipeline without overwritting previous ouputs. Delete any files you want repeated, but make sure to delete everything downstream of them as well.
 - `--adjustPidents` (force global alignments for BLASTN)
 - `--dirDepth` (organize output files into subdirectories for large datasets)
 
@@ -128,14 +128,14 @@ The main output file is named with the -f or --outputFile flag (default: "Sanger
 python Classify_Sanger_OTUs.py --metadata samples.csv --output_dir ./results/ --outputFile output_file.csv --ITS_db UNITE_location.fasta --ITS2_db UNITE_ALL_location.fasta --RBCL RBCL_location.fasta --salvage --run_funguild 
 ```
 
-For full options, run:
+For full options and defaults, run:
 ```sh
 python Classify_Sanger_OTUs.py -h
 ```
 
 ## Test Data
 
-There is a provided dataset and metadata sheet in ./test_data/ that can be used to test the install with. See the README.txt there for a suggested call.
+There is a provided dataset and metadata sheet in ./test_data/ that can be used to test the install with. See the README.txt there for a suggested call and expected output.
 
 
 ## Notes
@@ -152,4 +152,5 @@ For questions or feature requests, please contact the script author or open an i
 
 ## Citation
 
-Brekke, T.D., Weeks, T.L., Barber, R.A., Thomson, I., Gooda, R., Gargiulo, R., Delhaye, G., Andrew, C., Kowal, J., Bidartondo, M., Suz, L. M. (in prep) MycorrhizaTracer: A BIOINFORMATIC PIPELINE FOR FUNGI AND PLANT CLASSIFICATION OF SANGER DNA SEQUENCES
+MycorrhizaTracer: A BIOINFORMATIC PIPELINE FOR FUNGI AND PLANT CLASSIFICATION OF SANGER DNA SEQUENCES
+T. D. Brekke, T. Weeks, R. A. Barber, I. Thomson, R. Gooda, R. Gargiulo, G. Delhaye, C. Andrew, J. Kowal, M. Bidartondo, L. M. Suz. 2026. bioRxiv 2026.04.23.720352; doi: https://doi.org/10.64898/2026.04.23.720352
