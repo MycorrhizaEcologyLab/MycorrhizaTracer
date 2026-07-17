@@ -1853,11 +1853,11 @@ def parse_salvage_blastn_output(MetaDict, Sample_ID, gene, args, blastfile):
 
 
 	#find the best hit based on pident and length
-	#best_hit = max(blast_list, key=lambda x: (float(x.split("\t")[11]))) #pick the BLAST hit with the highest eval
-	# Find the maximum value for the key
-	max_eval = max(float(x.split("\t")[11]) for x in blast_list)
+	#best_hit = max(blast_list, key=lambda x: (float(x.split("\t")[11]))) #pick the BLAST hit with the lowest eval
+	# Find the minimum value for the key
+	min_eval = min(float(x.split("\t")[11]) for x in blast_list)
 	# Get all entries with that value
-	best_hits = [x for x in blast_list if float(x.split("\t")[11]) == max_eval]
+	best_hits = [x for x in blast_list if float(x.split("\t")[11]) == min_eval]
 	
 	#print("Best hit for Sample_ID", Sample_ID, ":", file=sys.stderr)
 	#pprint.pprint(best_hits)	

@@ -5,13 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [dev]
+## [dev] 
+
+### Added
+
+### Changed
+
+### Removed
+
+
+## [2.3.1] 2026-07-17
 
 ### Added
 
 ### Changed 
+- fixed a bug where the blast hit with the MAX evalue was selected in the salvaging pipeline not the one with the MIN evalue.  
 - updated output file to report fastq instead of fasta for ITS reads. 
-- dirdepth can now parse by underscore, dash, or period. goes in order, if there's an udnerscore it uses only that, elif there's a dash, it uses only that, elif there's a period it uses only that. else it doesn't split. 
+- dirdepth can now parse by underscore, dash, or period. goes in order, if there's an underscore it uses only that, elif there's a dash, it uses only that, elif there's a period it uses only that. else it doesn't split. 
 - updated a os.path.join error that meant the cluster directory isn't found if the output dir isn't specified with a trailing "/". should work regardless now. 
 
 ### Removed
