@@ -1356,9 +1356,9 @@ def reformat_RBCL_taxonomy(bit):
 def get_consensus_taxonomy(trimmed_list, args):
 	#this only needs to return a taxonomy string where the taxonomy at each level agrees (or agrees at >args.taxonomy_consensus_threshold).
 	if args.pidentDiff == 0:
-		# If pidentDiff is 0, we take the single hit with the highest evalue: I don't like this method as it's just taking the top blast hit without looking at any others. But it keeps being requested. I put a big warning in the help pages and made it not go this way by default - that's the best I can do. 
-		maxEvalue = max(float(hit.split("\t")[10]) for hit in trimmed_list) 
-		best_hit = next((hit for hit in trimmed_list if float(hit.split("\t")[10]) == maxEvalue), None)
+		# If pidentDiff is 0, we take the single hit with the lowest evalue: I don't like this method as it's just taking the top blast hit without looking at any others. But it keeps being requested. I put a big warning in the help pages and made it not go this way by default - that's the best I can do. 
+		minEvalue = min(float(hit.split("\t")[10]) for hit in trimmed_list) 
+		best_hit = next((hit for hit in trimmed_list if float(hit.split("\t")[10]) == minEvalue), None)
 		#print(best_hit)
 		#print(best_hit.split("\t")[1].split("|")[-1] if best_hit else "None")
 		return best_hit.split("\t")[1].split("|")[-1] if best_hit else "None"
