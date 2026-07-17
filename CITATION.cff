@@ -7,8 +7,8 @@ authors:
   - family-names: "Brekke"
     given-names: "Tom"
     affiliation: "Royal Botanic Gardens, Kew"
-repository-code: "https://github.com/tom-brekke/MycorrhizaTracer"
-url: "https://github.com/tom-brekke/MycorrhizaTracer"
+repository-code: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
+url: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
 license: MIT
 version: "2.3.1"
 date-released: "2026-07-17"
