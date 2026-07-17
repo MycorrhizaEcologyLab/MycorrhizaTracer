@@ -1357,8 +1357,8 @@ def get_consensus_taxonomy(trimmed_list, args):
 	#this only needs to return a taxonomy string where the taxonomy at each level agrees (or agrees at >args.taxonomy_consensus_threshold).
 	if args.pidentDiff == 0:
 		# If pidentDiff is 0, we take the single hit with the lowest evalue: I don't like this method as it's just taking the top blast hit without looking at any others. But it keeps being requested. I put a big warning in the help pages and made it not go this way by default - that's the best I can do. 
-		minEvalue = min(float(hit.split("\t")[10]) for hit in trimmed_list) 
-		best_hit = next((hit for hit in trimmed_list if float(hit.split("\t")[10]) == minEvalue), None)
+		max_bitscore = max(float(hit.split("\t")[11]) for hit in trimmed_list) 
+		best_hit = next((hit for hit in trimmed_list if float(hit.split("\t")[11]) == max_bitscore), None)
 		#print(best_hit)
 		#print(best_hit.split("\t")[1].split("|")[-1] if best_hit else "None")
 		return best_hit.split("\t")[1].split("|")[-1] if best_hit else "None"
@@ -1855,9 +1855,9 @@ def parse_salvage_blastn_output(MetaDict, Sample_ID, gene, args, blastfile):
 	#find the best hit based on pident and length
 	#best_hit = max(blast_list, key=lambda x: (float(x.split("\t")[11]))) #pick the BLAST hit with the lowest eval
 	# Find the minimum value for the key
-	min_eval = min(float(x.split("\t")[11]) for x in blast_list)
+	max_bitscore = max(float(x.split("\t")[11]) for x in blast_list)
 	# Get all entries with that value
-	best_hits = [x for x in blast_list if float(x.split("\t")[11]) == min_eval]
+	best_hits = [x for x in blast_list if float(x.split("\t")[11]) == max_bitscore]
 	
 	#print("Best hit for Sample_ID", Sample_ID, ":", file=sys.stderr)
 	#pprint.pprint(best_hits)	
