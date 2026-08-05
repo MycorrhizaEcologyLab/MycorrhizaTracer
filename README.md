@@ -138,12 +138,16 @@ python Classify_Sanger_OTUs.py -h
 There is a provided dataset and metadata sheet in ./test_data/ that can be used to test the install with. See the README.txt there for a suggested call and expected output.
 
 
+## Guidelines on adapting the pipeline to other taxa and/or other genomic targets
+
+If you are adapting the pipeline for taxa that are not fungi or plants or using gene regions other than fungal ITS, you MUST use the columns in the metadata sheet assigned to ITS2 or RBCL (and also specify an appropriate --ITS2_db or --RBCL_db). This is because the chromatograms in the ITS columns will be passed to ITSx which will search for the ITS region. If it is missing or incomplete then that sample will fail. This step is skipped for the ITS2 and RBCL samples, and so is appropriate for other regions and taxa. 
+
+
 ## Notes
 
 - Taxonomy headers in reference FASTA files must be formatted as UNITE general fasta release
 - Salvaging should always be interpreted with caution.
 - For best results, review the summary and logs for warnings or errors.
-- If you are adapting the pipeline for taxa that are not fungi or plants or using gene regions other than fungal ITS, you MUST use the columns in the metadata sheet assigned to ITS2 or RBCL (and also specify an appropriate --ITS2_db or --RBCL_db). This is because the chromatograms in the ITS columns will be passed to ITSx which will search for the ITS region. If it is missing or incomplete then that sample will fail. This step is skipped for the ITS2 and RBCL chromatograms, and so is appropriate for all other regions and taxa. 
 
 ---
 
