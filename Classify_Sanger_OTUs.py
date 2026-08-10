@@ -77,7 +77,23 @@ def parse_args():
 	parser.add_argument("--troubleshooting", action="store_true", help="Run the pipeline in troubleshooting mode. This will print additional information to stderr and may create additional output files for debugging purposes. Default is False.")
 	parser.add_argument("--firstNsamples", type=int, default=0, help="Run the pipeline on only the first N samples in the metadata file. This is useful for testing and debugging. but should never be used for the final analysis. Default is %(default)s, which means all samples will be processed. Set to 0 to process all samples.")
 	
+	#degrade reads for benchmarking purposes
+	parser.add_argument("--samples_to_degrade", type=str, default="", help=argparse.SUPPRESS)
+	parser.add_argument("--noise", type=float, default=0.0, help=argparse.SUPPRESS)
+
+
 	args = parser.parse_args()
+	if args.noise < 0:
+		parser.error("--noise must be >= 0")
+
+	if args.samples_to_degrade.strip():
+		args.samples_to_degrade_set = {s.strip() for s in args.samples_to_degrade.split(",") if s.strip()}
+	else:
+		args.samples_to_degrade_set = set()
+
+	if args.noise > 0 and len(args.samples_to_degrade_set) == 0:
+		print("Warning: --noise was set but --samples_to_degrade is empty. No reads will be degraded.", file=sys.stderr)
+
 	if args.ITS_db is None and args.ITS2_db is None and args.RBCL_db is None:
 		parser.error("At least one of the BLASTN databases must be provided. Please provide at least one of --ITS_db, --ITS2_db, or --RBCL_db.")
 	

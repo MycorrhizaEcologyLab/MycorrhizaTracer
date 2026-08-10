@@ -17,6 +17,7 @@ import requests
 from Bio.Align import PairwiseAligner
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import math
 
 ################################################################################################
 #Definitions:
@@ -369,6 +370,9 @@ def create_fastq_from_ab1(MetaDict, args, SS_FH):
 						except Exception as e2:
 							print(f"Error: Failed to read {ab1_file} as ABI or SCF. ABI error: {e}, SCF error: {e2}", file=sys.stderr)
 							raise
+
+					if getattr(args, "noise", 0.0) > 0 and should_degrade_sample(Sample_ID, args):
+						seq_record = inject_peak_noise_and_refresh_phred(seq_record, args.noise, args.verbose)
 					
 					#need to qual trim the sequence
 					if args.length_to_trim > 0:
@@ -410,6 +414,86 @@ def create_fastq_from_ab1(MetaDict, args, SS_FH):
 
 	print("	Samples processed: ", counter, end = "\r", file=sys.stderr, sep="")
 	return MetaDict
+
+def should_degrade_sample(sample_id, args):
+	if hasattr(args, "samples_to_degrade_set"):
+		return sample_id in args.samples_to_degrade_set
+	raw = getattr(args, "samples_to_degrade", "")
+	if not raw:
+		return False
+	return sample_id in {s.strip() for s in raw.split(",") if s.strip()}
+
+def inject_peak_noise_and_refresh_phred(record, noise, verbose=False):
+	"""
+	Add gaussian noise to ABI peak traces and recompute phred qualities from noisy traces.
+	Noise is interpreted as a fraction of maximum peak height.
+	"""
+	if "abif_raw" not in record.annotations:
+		if verbose:
+			print(f"Warning: Cannot degrade record {record.id}; missing abif_raw peaks.", file=sys.stderr)
+		return record
+
+	abif = record.annotations["abif_raw"]
+	needed = ["DATA9", "DATA10", "DATA11", "DATA12", "PLOC2"]
+	if any(k not in abif for k in needed):
+		if verbose:
+			print(f"Warning: Cannot degrade record {record.id}; missing one or more ABI trace arrays.", file=sys.stderr)
+		return record
+
+	a = np.array(abif["DATA9"], dtype=float)
+	c = np.array(abif["DATA10"], dtype=float)
+	g = np.array(abif["DATA11"], dtype=float)
+	t = np.array(abif["DATA12"], dtype=float)
+
+	max_peak = max(np.max(a), np.max(c), np.max(g), np.max(t)) if len(a) > 0 else 0.0
+	if max_peak <= 0 or noise <= 0:
+		return record
+
+	sigma = noise * max_peak
+	rng = np.random.default_rng()
+	a_noisy = np.clip(a + rng.normal(0.0, sigma, size=a.shape), 0.0, None)
+	c_noisy = np.clip(c + rng.normal(0.0, sigma, size=c.shape), 0.0, None)
+	g_noisy = np.clip(g + rng.normal(0.0, sigma, size=g.shape), 0.0, None)
+	t_noisy = np.clip(t + rng.normal(0.0, sigma, size=t.shape), 0.0, None)
+
+	# Overwrite traces so downstream peak-trimming sees degraded chromatograms.
+	abif["DATA9"] = [int(round(x)) for x in a_noisy]
+	abif["DATA10"] = [int(round(x)) for x in c_noisy]
+	abif["DATA11"] = [int(round(x)) for x in g_noisy]
+	abif["DATA12"] = [int(round(x)) for x in t_noisy]
+
+	ploc2 = abif["PLOC2"]
+	seq = str(record.seq)
+	quals = []
+	channel_idx = {"A": 0, "C": 1, "G": 2, "T": 3}
+	for i, base in enumerate(seq):
+		if i >= len(ploc2):
+			break
+		idx = int(ploc2[i])
+		if idx < 0 or idx >= len(a_noisy):
+			quals.append(0)
+			continue
+
+		signals = [a_noisy[idx], c_noisy[idx], g_noisy[idx], t_noisy[idx]]
+		if base not in channel_idx:
+			quals.append(0)
+			continue
+
+		called = signals[channel_idx[base]]
+		others = [signals[j] for j in range(4) if j != channel_idx[base]]
+		competing = max(others) if others else 0.0
+		denom = called + competing + 1e-9
+		err_prob = min(max(competing / denom, 1e-9), 0.999999)
+		q = int(round(-10.0 * math.log10(err_prob)))
+		quals.append(max(0, min(45, q)))
+
+	if len(quals) == len(record):
+		record.letter_annotations["phred_quality"] = quals
+	elif len(quals) > 0:
+		record = record[:len(quals)]
+		record.letter_annotations["phred_quality"] = quals
+
+	return record
 
 def make_consensus_fastq(MetaDict, args):
 	print("\nMaking consensus fasta and fastq files from ab1 files.", file=sys.stderr)
