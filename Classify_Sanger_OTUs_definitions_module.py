@@ -896,10 +896,10 @@ def build_consensus_record(rec_list, sample_id, sample_description="consensus"):
 
 	# Set scoring similar to localxx: match=1, mismatch=0, no gap penalties
 	aligner.mode = 'local'
-	aligner.match_score = 1
-	aligner.mismatch_score = 0
-	aligner.open_gap_score = 0
-	aligner.extend_gap_score = 0
+	aligner.match_score = 2
+	aligner.mismatch_score = -1
+	aligner.open_gap_score = -2
+	aligner.extend_gap_score = -0.5
 
 	best_aln = aligner.align(rec1.seq, rec2.seq)[0] #might need to be rev1.seq
 	#pprint.pprint(best_aln.format())
@@ -908,57 +908,52 @@ def build_consensus_record(rec_list, sample_id, sample_description="consensus"):
 		raise ValueError("No alignment found! Check %(sample_id)s for issues." % {"sample_id": sample_id})
 
 	seq1_aln, seq2_aln = align_seqrecords_with_quality_from_alignment(best_aln, rec1, rec2)
-	#print(rec1.seq)
-	#print(rec2.seq)
-	#print(seq1_aln.seq)
-	#print(seq2_aln.seq)
-	#input("Press Enter to continue...2")  # Debugging pause
-	q1 = rec1.letter_annotations["phred_quality"]
-	q2 = rec2.letter_annotations["phred_quality"]
-
-	q1_aln = []
-	q2_aln = []
-
-	i, j = 0, 0  # indices for original quality arrays
-
-	for b1, b2 in zip(seq1_aln, seq2_aln):
-		if b1 != "-":
-			q1_aln.append(q1[i])
-			i += 1
-		else:
-			q1_aln.append(None)
-
-		if b2 != "-":
-			q2_aln.append(q2[j])
-			j += 1
-		else:
-			q2_aln.append(None)
+	q1_aln = seq1_aln.letter_annotations["phred_quality"]
+	q2_aln = seq2_aln.letter_annotations["phred_quality"]
 
 	consensus_seq = []
 	consensus_qual = []
+	overlap_columns = 0
+	disagreement_columns = 0
 
-	for base1, base2, qval1, qval2 in zip(seq1_aln, seq2_aln, q1_aln, q2_aln):
-		if base1 == base2 and base1 != "-":
-			consensus_seq.append(base1)
-			if qval1 is not None and qval2 is not None:
-				consensus_qual.append(max(qval1, qval2))  # pick higher quality
-			else:
-				consensus_qual.append(qval1 or qval2 or 0)
+	for base1, base2, qval1, qval2 in zip(str(seq1_aln.seq), str(seq2_aln.seq), q1_aln, q2_aln):
+		if base1 == "-" and base2 == "-":
+			continue
 
-		elif base1 == "-" and base2 != "-":
+		if base1 == "-":
 			consensus_seq.append(base2)
-			consensus_qual.append(qval2 or 0)
+			consensus_qual.append(qval2)
+			continue
 
-		elif base2 == "-" and base1 != "-":
+		if base2 == "-":
 			consensus_seq.append(base1)
-			consensus_qual.append(qval1 or 0)
+			consensus_qual.append(qval1)
+			continue
 
+		overlap_columns += 1
+
+		if base1 == base2:
+			consensus_seq.append(base1)
+			consensus_qual.append(max(qval1, qval2))
+			continue
+
+		disagreement_columns += 1
+		if qval1 >= qval2 + 5:
+			consensus_seq.append(base1)
+			consensus_qual.append(qval1)
+		elif qval2 >= qval1 + 5:
+			consensus_seq.append(base2)
+			consensus_qual.append(qval2)
 		else:
 			consensus_seq.append("N")
-			consensus_qual.append(min(qval1 or 0, qval2 or 0))  # low confidence
+			consensus_qual.append(min(qval1, qval2))
 
-	#pprint.pprint("".join(consensus_seq))
-	#input("Press Enter to continue...3")  # Debugging pause
+	if len(consensus_seq) == 0:
+		raise ValueError(f"Consensus merge for {sample_id} produced no bases. Check the overlap and trimming.")
+
+	if overlap_columns == 0:
+		raise ValueError(f"Consensus merge for {sample_id} found no shared aligned columns. Check read orientation and trimming.")
+
 	return (SeqRecord(
 		Seq("".join(consensus_seq)),
 		id = sample_id,

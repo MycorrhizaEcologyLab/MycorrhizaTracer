@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - when benchmarking noise is enabled, noise is added to ABI peak channels before trimming and PHRED qualities are recalculated from the perturbed traces so downstream trimming and salvaging see degraded reads.
 - benchmarking flags are now hidden from the standard `-h` help output to avoid exposing experimental options to typical users.
+- the consensus caller was reworked so it wasn't so permissive. 
 
 ### Removed
 
