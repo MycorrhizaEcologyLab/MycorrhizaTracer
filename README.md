@@ -72,10 +72,10 @@ If you have manually curated fasta/fastq files: the pipeline can begin with them
 - `--outputFile` (summary output file)
 - `--ITS_db`, `--ITS2_db`, `--RBCL_db` (paths to reference databases)
 
-## Recommended Flags
+## Flags of note
 
 - `--resume` Re-run pipeline without overwritting previous ouputs. Delete any files you want repeated, but make sure to delete everything downstream of them as well.
-- `--adjustPidents` (force global alignments for BLASTN)
+- `--adjustPidents` (discount matches with high pident but which have large regions of overlapping but non-matching sequence by treating the non-matching, overlapping sequence as mismatches and re-calculating the pident. Consider the alignment between two sequences of length 500 who overlap with 100% identity from base 100-500 in the query and base 100-500 in the target; in such a case the pident would not be 100% across 400 bases, but reduced to 80% across 500 bases. This is similar to forcing a global alignment)
 - `--dirDepth` (organize output files into subdirectories for large datasets)
 
 ## Metadata Checking
