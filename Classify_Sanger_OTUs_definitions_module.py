@@ -5,6 +5,7 @@ import glob
 import sys
 import pprint
 import re
+import copy
 from multiprocessing import Pool
 import subprocess
 import Bio
@@ -17,7 +18,7 @@ import requests
 from Bio.Align import PairwiseAligner
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import math
+import shlex
 
 ################################################################################################
 #Definitions:
@@ -62,6 +63,19 @@ def add_in_dirDepth(SampleID, gene, args):
 		subdir = os.path.join(*bits[:dirDepth]) if dirDepth > 0 else ""
 		return subdir
 	return ""
+
+def log_blast_command(args, cmd, stage=""):
+	"""Append executed BLAST-family commands to OUTPUT/blast_commands.txt."""
+	if not hasattr(args, "output_dir") or not args.output_dir:
+		return
+	try:
+		os.makedirs(args.output_dir, exist_ok=True)
+		log_path = os.path.join(args.output_dir, "blast_commands.txt")
+		prefix = f"[{stage}] " if stage else ""
+		with open(log_path, "a") as log_fh:
+			log_fh.write(prefix + shlex.join(cmd) + "\n")
+	except Exception as e:
+		print(f"Warning: Could not write BLAST command log: {e}", file=sys.stderr)
 
 def load_metadata(args):
 	print("Reading in Metadata file: ", args.metadata, sep="", file=sys.stderr)
@@ -372,7 +386,12 @@ def create_fastq_from_ab1(MetaDict, args, SS_FH):
 							raise
 
 					if getattr(args, "noise", 0.0) > 0 and should_degrade_sample(Sample_ID, args):
-						seq_record = inject_peak_noise_and_refresh_phred(seq_record, args.noise, args.verbose)
+						seq_record = mutate_sequence_bases_by_fraction(
+							seq_record,
+							getattr(args, "noise_fraction", args.noise),
+							rng=np.random.default_rng(),
+							verbose=args.verbose,
+						)
 					
 					#need to qual trim the sequence
 					if args.length_to_trim > 0:
@@ -423,77 +442,51 @@ def should_degrade_sample(sample_id, args):
 		return False
 	return sample_id in {s.strip() for s in raw.split(",") if s.strip()}
 
-def inject_peak_noise_and_refresh_phred(record, noise, verbose=False):
+def mutate_sequence_bases_by_fraction(record, fraction, rng=None, verbose=False):
+	"""Randomly mutate a fixed fraction of bases in a sequence record.
+	The fraction is interpreted as a proportion of bases changed, e.g. 0.10 == 10%.
+	If a value > 1 is passed, it is treated as a percent and divided by 100.
+	Quality scores are left unchanged so downstream trimming reflects the real read
+	quality rather than an artificial chromatogram-level degradation.
 	"""
-	Add gaussian noise to ABI peak traces and recompute phred qualities from noisy traces.
-	Noise is interpreted as a fraction of maximum peak height.
-	"""
-	if "abif_raw" not in record.annotations:
-		if verbose:
-			print(f"Warning: Cannot degrade record {record.id}; missing abif_raw peaks.", file=sys.stderr)
+	if record is None:
 		return record
-
-	abif = record.annotations["abif_raw"]
-	needed = ["DATA9", "DATA10", "DATA11", "DATA12", "PLOC2"]
-	if any(k not in abif for k in needed):
-		if verbose:
-			print(f"Warning: Cannot degrade record {record.id}; missing one or more ABI trace arrays.", file=sys.stderr)
+	if fraction is None:
+		fraction = 0.0
+	fraction = float(fraction)
+	if fraction <= 0:
 		return record
+	if fraction > 1.0:
+		fraction = fraction / 100.0
+	fraction = min(max(fraction, 0.0), 1.0)
 
-	a = np.array(abif["DATA9"], dtype=float)
-	c = np.array(abif["DATA10"], dtype=float)
-	g = np.array(abif["DATA11"], dtype=float)
-	t = np.array(abif["DATA12"], dtype=float)
-
-	max_peak = max(np.max(a), np.max(c), np.max(g), np.max(t)) if len(a) > 0 else 0.0
-	if max_peak <= 0 or noise <= 0:
+	seq = list(str(record.seq).upper())
+	if not seq:
 		return record
-
-	sigma = noise * max_peak
-	rng = np.random.default_rng()
-	a_noisy = np.clip(a + rng.normal(0.0, sigma, size=a.shape), 0.0, None)
-	c_noisy = np.clip(c + rng.normal(0.0, sigma, size=c.shape), 0.0, None)
-	g_noisy = np.clip(g + rng.normal(0.0, sigma, size=g.shape), 0.0, None)
-	t_noisy = np.clip(t + rng.normal(0.0, sigma, size=t.shape), 0.0, None)
-
-	# Overwrite traces so downstream peak-trimming sees degraded chromatograms.
-	abif["DATA9"] = [int(round(x)) for x in a_noisy]
-	abif["DATA10"] = [int(round(x)) for x in c_noisy]
-	abif["DATA11"] = [int(round(x)) for x in g_noisy]
-	abif["DATA12"] = [int(round(x)) for x in t_noisy]
-
-	ploc2 = abif["PLOC2"]
-	seq = str(record.seq)
-	quals = []
-	channel_idx = {"A": 0, "C": 1, "G": 2, "T": 3}
-	for i, base in enumerate(seq):
-		if i >= len(ploc2):
-			break
-		idx = int(ploc2[i])
-		if idx < 0 or idx >= len(a_noisy):
-			quals.append(0)
+	base_choices = ["A", "C", "G", "T"]
+	n_to_mutate = int(round(len(seq) * fraction))
+	if n_to_mutate <= 0:
+		return record
+	if rng is None:
+		rng = np.random.default_rng()
+	positions = rng.choice(len(seq), size=n_to_mutate, replace=False)
+	for pos in positions:
+		current = seq[int(pos)]
+		alts = [b for b in base_choices if b != current]
+		if not alts:
 			continue
+		seq[int(pos)] = rng.choice(alts)
 
-		signals = [a_noisy[idx], c_noisy[idx], g_noisy[idx], t_noisy[idx]]
-		if base not in channel_idx:
-			quals.append(0)
-			continue
+	updated = copy.deepcopy(record)
+	updated.seq = Seq("".join(seq))
+	if verbose:
+		print(f"Mutated {n_to_mutate}/{len(seq)} bases ({fraction * 100:.2f}%) in {record.id}.", file=sys.stderr)
+	return updated
 
-		called = signals[channel_idx[base]]
-		others = [signals[j] for j in range(4) if j != channel_idx[base]]
-		competing = max(others) if others else 0.0
-		denom = called + competing + 1e-9
-		err_prob = min(max(competing / denom, 1e-9), 0.999999)
-		q = int(round(-10.0 * math.log10(err_prob)))
-		quals.append(max(0, min(45, q)))
-
-	if len(quals) == len(record):
-		record.letter_annotations["phred_quality"] = quals
-	elif len(quals) > 0:
-		record = record[:len(quals)]
-		record.letter_annotations["phred_quality"] = quals
-
-	return record
+def _normalize_base_string(seq_text):
+	"""Normalize sequence text to uppercase A/C/G/T/N for robust comparisons."""
+	allowed = {"A", "C", "G", "T", "N"}
+	return "".join(ch if ch in allowed else "N" for ch in seq_text.upper())
 
 def make_consensus_fastq(MetaDict, args):
 	print("\nMaking consensus fasta and fastq files from ab1 files.", file=sys.stderr)
@@ -1052,6 +1045,7 @@ def classify_seqs_blastn(MetaDict, args):
 				"-dbtype", "nucl",
 			]
 			try:
+				log_blast_command(args, blastn_cmd, stage="classify_makeblastdb")
 				subprocess.run(blastn_cmd, check=True)
 			except subprocess.CalledProcessError as e:
 				print(f"Error creating BLASTN database: {e}", file=sys.stderr)
@@ -1120,15 +1114,17 @@ def retry_blastn_on_trimmed_reads(MetaDict, gene_list, dbs, args):
 				if counter % 10 == 0:
 					print("\tSamples processed: ", counter, end = "\r", file=sys.stderr, sep="")
 				
-				# need to write trimmed fqs to fa
-				for fq in MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["fq_files"]:
-					#input(fq)
-					if not os.path.exists(fq):
-						#print("	not found")
+				# Write retry FASTA from in-memory records to guarantee we use current degraded/trimmed reads.
+				for record, fq in zip(MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["records"], MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["fq_files"]):
+					fa = fq.replace(".fq", ".fa")
+					if record is None or len(record) == 0:
 						if args.verbose:
-							print(f"Warning: Expected trimmed fastq file {fq} not found for Sample_ID {Sample_ID} gene {gene}. Skipping this sample and gene.", file=sys.stderr)
+							print(f"Warning: Missing in-memory trimmed record for Sample_ID {Sample_ID} gene {gene}; skipping one retry read.", file=sys.stderr)
 						continue
-					SeqIO.convert(fq, "fastq", fq.replace(".fq", ".fa"), "fasta")  # Convert fastq to fasta for BLASTN
+					if not os.path.exists(os.path.dirname(fa)):
+						os.makedirs(os.path.dirname(fa), exist_ok=True)
+					with open(fa, "w") as fa_handle:
+						SeqIO.write(record, fa_handle, "fasta")
 
 				# do the blastn
 				blast_jobs = []
@@ -1138,13 +1134,10 @@ def retry_blastn_on_trimmed_reads(MetaDict, gene_list, dbs, args):
 					blastoutfile = os.path.join(args.output_dir, "02_classify_seqs", add_in_dirDepth(Sample_ID, gene, args), Sample_ID + "_" + gene +"."+read+".blastnout")
 					blastfilelist.append(blastoutfile)
 					query = MetaDict[Sample_ID][gene]["Seqs"]["ab1s"]["fq_files"][i].replace(".fq", ".fa")
-					#print(query)
-					#input(os.path.isfile(query))
 
 					if not os.path.exists(query):
-						#print("not found")
 						if args.verbose:
-							print(f"Warning: Expected read {query} not found for Sample_ID {Sample_ID} gene {gene}. Skipping this read.", file=sys.stderr)
+							print(f"Warning: Expected retry FASTA {query} not found for Sample_ID {Sample_ID} gene {gene}. Skipping this read.", file=sys.stderr)
 						continue
 					blast_jobs.append((blastoutfile, MetaDict, Sample_ID, gene, dbs, args, query))
 
@@ -1237,6 +1230,7 @@ def do_blast(blastoutfile, MetaDict, Sample_ID, gene, dbs, args, query):
 		"-out", blastoutfile
 	]
 	try:
+		log_blast_command(args, blastn_cmd, stage="primary_blast")
 		subprocess.run(blastn_cmd, check=True, capture_output=True)
 	except subprocess.CalledProcessError as e:
 		print(f"Error running BLASTN for Sample_ID {Sample_ID} gene {gene}: {e}", file=sys.stderr)
@@ -1823,8 +1817,10 @@ def salvage_lowQ_seqs(MetaDict, args):
 		
 		#make a blast db out of the centroids fasta file
 		print("Creating BLASTN database from clustered sequences for salvaging low quality sequences.", file=sys.stderr)
+		makeblastdb_cmd = ["makeblastdb", "-in", centroids_fasta, "-dbtype", "nucl", "-out", centroids_fasta]
 		try:
-			subprocess.run(["makeblastdb", "-in", centroids_fasta, "-dbtype", "nucl", "-out", centroids_fasta], check=True, capture_output=True)
+			log_blast_command(args, makeblastdb_cmd, stage="salvage_makeblastdb")
+			subprocess.run(makeblastdb_cmd, check=True, capture_output=True)
 		except subprocess.CalledProcessError as e:
 			print(f"Error creating BLASTN database: {e}", file=sys.stderr)
 			exit(1)
@@ -1907,6 +1903,7 @@ def do_salvage_blast(blastoutfile, Sample_ID, gene, dbs, args, query):
 		"-out", blastoutfile
 	]
 	try:
+		log_blast_command(args, blastn_cmd, stage="salvage_blast")
 		subprocess.run(blastn_cmd, check=True, capture_output=True)
 	except subprocess.CalledProcessError as e:
 		print(f"Error running BLASTN for Sample_ID {Sample_ID} gene {gene}: {e}", file=sys.stderr)

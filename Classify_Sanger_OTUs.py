@@ -85,6 +85,9 @@ def parse_args():
 	args = parser.parse_args()
 	if args.noise < 0:
 		parser.error("--noise must be >= 0")
+	if args.noise > 100:
+		parser.error("--noise must be <= 100 when provided as a percentage")
+	args.noise_fraction = args.noise / 100.0 if args.noise > 1.0 else args.noise
 
 	if args.samples_to_degrade.strip():
 		args.samples_to_degrade_set = {s.strip() for s in args.samples_to_degrade.split(",") if s.strip()}

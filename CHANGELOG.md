@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - benchmarking-only CLI flags `--samples_to_degrade` and `--noise` for injecting artificial chromatogram noise into selected samples during AB1 import.
+- a file for the blast commands run throughout the pipeline
 
 ### Changed
 - when benchmarking noise is enabled, noise is added to ABI peak channels before trimming and PHRED qualities are recalculated from the perturbed traces so downstream trimming and salvaging see degraded reads.

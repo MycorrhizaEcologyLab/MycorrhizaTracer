@@ -149,6 +149,29 @@ If you are adapting the pipeline for taxa that are not fungi or plants or using 
 - Salvaging should always be interpreted with caution.
 - For best results, review the summary and logs for warnings or errors.
 
+## Hidden parameters
+
+For benchmarking the salvaging performance, there are hidden options to degrade selected samples:
+
+- `--samples_to_degrade`: comma-separated list of `Sample_ID` values to degrade.
+- `--noise`: noise magnitude (float, must be `0 <= noise <= 1`).
+
+How `--noise` is interpreted:
+
+- `--noise` is treated as a mutation rate on the read sequence.
+- It specifies the fraction of bases to change in each degraded read. For example, `0.05` means 5% of bases are mutated, and `5` is interpreted as 5% as well.
+- A fixed number of positions is chosen at random across the read, and each selected base is replaced with a randomly chosen alternative from `A`, `C`, `G`, or `T`.
+- The base call stays in the same read and position context, but the sequence content is altered while the original PHRED scores are left unchanged.
+- This is designed to benchmark sequence-level salvage performance in a simple, predictable, and reproducible way without changing how a read is treated during trimming and quality evaluation.
+
+Practical notes:
+
+- `0` means no degradation.
+- Values between `0` and `1` are interpreted as fractions (e.g. `0.10 = 10%`).
+- Values between `1` and `100` are interpreted as percentages (e.g. `5 = 5%`, `50 = 50%`).
+- The effective number of mutated bases is `round(len(read) * fraction)`, so the behaviour is deterministic in expectation and easy to calibrate.
+- If `--noise` is set but `--samples_to_degrade` is empty, no reads are degraded.
+
 ---
 
 For questions or feature requests, please contact the script author or open an issue on github
