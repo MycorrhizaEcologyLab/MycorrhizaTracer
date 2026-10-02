@@ -11,7 +11,8 @@
 ## Pre-Merge Checklist
 
 ### Version Management
-- [ ] Updated `VERSION` file with new version number (current: `2.2.0`)
+- [ ] Updated `VERSION` file with new version number 
+- [ ] Updated `CITATION.cff` file with new version number
 - [ ] Updated `CHANGELOG.md` with date and version in format: `## [X.Y.Z] YYYY-MM-DD`
 - [ ] Moved changes from `## [dev]` section to the new version section in `CHANGELOG.md`
 - [ ] Created new empty `## [dev]` section at top of `CHANGELOG.md` with Added/Changed/Removed subsections
