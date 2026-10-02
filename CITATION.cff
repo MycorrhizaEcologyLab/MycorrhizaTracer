@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: "If you use this software, please cite the journal article below."
 type: software
 title: "MycorrhizaTracer"
 abstract: "A Python pipeline for processing Sanger sequencing data (ab1 files), generating consensus sequences, classifying them taxonomically using BLASTN against reference databases, clustering sequences into OTUs, and optionally salvaging low-quality reads. Designed for fungal (ITS) and plant (ITS2, RBCL) genes with functional annotation via FUNGuild."
 authors:
   - family-names: "Brekke"
-    given-names: "Tom"
+    given-names: "Thomas D."
     affiliation: "Royal Botanic Gardens, Kew"
 repository-code: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
 url: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
@@ -22,3 +22,41 @@ keywords:
   - OTU-clustering
   - BLAST
   - Python
+
+# Directs GitHub and citation managers to cite your BDJ article:
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Brekke"
+      given-names: "Thomas D."
+    - family-names: "Weeks"
+      given-names: "Thomas"
+    - family-names: "Barber"
+      given-names: "Robert A."
+    - family-names: "Thomson"
+      given-names: "Isabelle"
+    - family-names: "Gooda"
+      given-names: "Rosemary"
+    - family-names: "Gargiulo"
+      given-names: "Roberta"
+    - family-names: "Delhaye"
+      given-names: "Guillaume"
+    - family-names: "Andrew"
+      given-names: "Carrie"
+    - family-names: "Kowal"
+      given-names: "Jill"
+    - family-names: "Bidartondo"
+      given-names: "Martin I."
+    - family-names: "Suz"
+      given-names: "Laura M."
+  title: "MycorrhizaTracer: A bioinformatic pipeline for fungi and plant classification of Sanger DNA sequences"
+  journal: "Biodiversity Data Journal"
+  volume: "14"
+  year: 2026
+  month: 9
+  start: "e198617"
+  doi: "10.3897/BDJ.14.e198617"
+  url: "https://doi.org/10.3897/BDJ.14.e198617"
+  publisher: "Pensoft Publishers"
+  issn: "1314-2836"
+  abstract: "Processing Sanger DNA sequences remains a routine, yet technically demanding step in many biodiversity and ecological studies, particularly when barcoding large numbers of environmental samples. Manual inspection and editing of trace files, DNA sequence alignment and classification using taxonomic reference databases are time-consuming, inconsistent and prone to error, compromising workflow standardisation, traceability and reproducibility. These challenges are compounded in studies involving degraded samples, in-house DNA sequencing, under-described taxa or research contexts in which investigators have limited access to computational tools.We present MycorrhizaTracer, an open-source pipeline for processing and taxonomically classifying large batches of Sanger sequencing chromatograms. The pipeline is optimised for fungal and plant taxa, but it is adaptable across the tree of life. The pipeline performs quality trimming, consensus generation from bidirectional reads, taxonomic classification via BLAST, clustering, optional salvaging of low-quality sequences and functional annotation of fungal taxa. Designed for scalability and ease of use, MycorrhizaTracer can process thousands of DNA chromatograms in a matter of hours without the need for a high-performance computer (HPC). Accuracy and ecological relevance are promoted by features such as gene region-specific taxonomic filtering and sequence-based clustering of unclassified reads. By streamlining trace-to-taxon workflows, MycorrhizaTracer reduces the burden of manual curation, supports reproducibility and enables efficient recovery of biodiversity data from Sanger sequences, particularly in field-based or resource-limited research contexts. MycorrhizaTracer is available through an open GitHub repository under an MIT licence as an open-source reproducible piece of bioinformatic software.We demonstrate the use and effectiveness of MycorrhizaTracer with a sample set of environmental sequencing data to illustrate how the pipeline preforms when applied to real-world data. These data are composed of over 2,000 samples sequenced in both directions at three target regions and include both high and low quality chromatograms chosen to represent the variation that may be seen in practice."
