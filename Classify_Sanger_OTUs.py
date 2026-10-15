@@ -95,6 +95,7 @@ def main():
 
 	#build output directory structure
 	OTU.make_output_dirs(args.output_dir)
+	OTU.copy_metadata_to_output_dir(args)
 
 	SS_FH = None
 	if args.sequence_stats:
