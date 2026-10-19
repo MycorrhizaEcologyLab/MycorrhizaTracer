@@ -10,8 +10,8 @@ authors:
 repository-code: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
 url: "https://github.com/MycorrhizaEcologyLab/MycorrhizaTracer"
 license: MIT
-version: "2.3.1"
-date-released: "2026-07-17"
+version: "2.4.0"
+date-released: "2026-10-19"
 keywords:
   - bioinformatics
   - sanger-sequencing
