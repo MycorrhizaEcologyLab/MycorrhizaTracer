@@ -5,6 +5,7 @@ import glob
 import sys
 import pprint
 import re
+import shutil
 from multiprocessing import Pool
 import subprocess
 import Bio
@@ -50,6 +51,7 @@ def add_in_dirDepth(SampleID, gene, args):
 	"""this helps build path names in many places and keep track of intermediary files"""
 	if hasattr(args, 'dirDepth') and args.dirDepth:
 		if re.search("_", SampleID):
+			
 			bits = SampleID.split("_")
 		elif re.search("-", SampleID):
 			bits = SampleID.split("-")
@@ -62,10 +64,30 @@ def add_in_dirDepth(SampleID, gene, args):
 		return subdir
 	return ""
 
+def copy_metadata_to_output_dir(args):
+	"""Copy the input metadata CSV into the output directory for reproducibility."""
+	if not hasattr(args, "metadata") or not args.metadata or args.metadata == "None":
+		return
+	metadata_path = os.path.abspath(args.metadata)
+	if not os.path.exists(metadata_path):
+		print(f"Metadata file not found, skipping copy: {metadata_path}", file=sys.stderr)
+		return
+	output_path = os.path.join(os.path.abspath(args.output_dir), os.path.basename(metadata_path))
+	if os.path.abspath(output_path) == metadata_path:
+		return
+	try:
+		shutil.copy2(metadata_path, output_path)
+		print(f"Copied metadata file to: {output_path}", file=sys.stderr)
+	except OSError as e:
+		print(f"Warning: could not copy metadata file to output dir: {e}", file=sys.stderr)
+
+
 def load_metadata(args):
 	print("Reading in Metadata file: ", args.metadata, sep="", file=sys.stderr)
 	resequenced_counter = linecounter=0
 	
+	
+
 	gene_list = ["ITS", "ITS2", "RBCL"]
 	if args.onlyITS:
 		gene_list = ["ITS"]
