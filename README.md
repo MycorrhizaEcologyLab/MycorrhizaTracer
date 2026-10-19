@@ -156,5 +156,4 @@ For questions or feature requests, please contact the script author or open an i
 
 ## Citation
 
-MycorrhizaTracer: A BIOINFORMATIC PIPELINE FOR FUNGI AND PLANT CLASSIFICATION OF SANGER DNA SEQUENCES
-T. D. Brekke, T. Weeks, R. A. Barber, I. Thomson, R. Gooda, R. Gargiulo, G. Delhaye, C. Andrew, J. Kowal, M. Bidartondo, L. M. Suz. 2026. bioRxiv 2026.04.23.720352; doi: https://doi.org/10.64898/2026.04.23.720352
+Brekke T, Weeks T, Barber R, Thomson I, Gooda R, Gargiulo R, Delhaye G, Andrew C, Kowal J, Bidartondo M, Suz L (2026) MycorrhizaTracer: A bioinformatic pipeline for fungi and plant classification of Sanger DNA sequences. Biodiversity Data Journal 14: e198617. https://doi.org/10.3897/BDJ.14.e198617
