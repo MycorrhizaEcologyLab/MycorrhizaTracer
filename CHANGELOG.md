@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added a def that will copy the input metadata to the output dir for easy future access. (2026-10-15 @tom-brekke)
 
 ### Changed
+- fixed a bug in the summary output that used the variable size instead of the quoted text 'size'. (2026-10-21 @tom-brekke)
 - updated the citation in the readme file (2026-10-19 @tom-brekke)
 - updated citation.cff now that the journal is published (2026-10-02 @tom-brekke)
 

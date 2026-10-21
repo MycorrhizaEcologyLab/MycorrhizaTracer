@@ -2236,7 +2236,7 @@ def print_final_summary_Stats(MetaDict, args, FH, command_run):
 		print("	", minOTUClusterSize, " minimum OTUs size", file=FH)
 		print("	", maxOTUClusterSize, " maximum OTU size", file=FH)
 		print("	", aveOTUClusterSize, " mean OTU size", file=FH)
-		print("	", medOTUClusterSize, " median OTU", size, file=FH)
+		print("	", medOTUClusterSize, " median OTU size", file=FH)
 		print("	", numOTUSingletonClusts, " number of singleton OTUs", file=FH)
 
 		print_stem_and_leaf(OTUTableHist, FH)
