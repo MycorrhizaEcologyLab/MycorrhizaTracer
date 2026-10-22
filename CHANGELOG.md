@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - added a def that will copy the input metadata to the output dir for easy future access. (2026-10-15 @tom-brekke)
+- screip to extract the data from the database now can filter by order number (2026-10-20 @tom-brekke)
 
 ### Changed
 - fixed a bug in the summary output that used the variable size instead of the quoted text 'size'. (2026-10-21 @tom-brekke)
